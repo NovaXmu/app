@@ -1,0 +1,454 @@
+Participant部分：
+获取学校所有学院名称：
+    /ticket/api/public/xmu?m=getColleges
+    参数：无
+    返回值：
+        {
+            "errno": 0,
+            "errmsg": "ok",
+            "data": [
+                "人文学院",
+                "公共事务学院",
+                "外文学院",
+                "法学院",
+                "经济学院",
+                "管理学院",
+                "艺术学院",
+                "新闻传播学院",
+                "数学科学学院",
+                "物理与机电工程学院",
+                "化学化工学院",
+                "生命科学学院",
+                "海洋与地球学院",
+                "信息科学与技术学院",
+                "软件学院",
+                "医学院",
+                "建筑与土木工程学院",
+                "材料学院",
+                "公共卫生学院",
+                "环境与生态学院",
+                "药学院",
+                "海外教育学院国际学院",
+                "国际关系学院南洋研究院",
+                "能源学院",
+                "台湾研究院",
+                "教育研究院",
+                "亚南研究院",
+                "马克思主义学院",
+                "航空航天学院",
+                "少数民族预科班"
+            ]
+        }
+
+用户身份绑定：POST
+    /ticket/api/public/participant
+    参数：
+        num     是       学号
+        password    是   密码
+
+获取当前用户身份详细资料（姓名学院手机号）
+    /ticket/api/user/participant?m=getUserInfo
+    参数：无
+    返回值:
+        {
+            "errno":0,
+            "errmsg":"ok",
+            "data":{
+                "id":"1135",
+                "xmu_num":"23320122203966",
+                "college":"信息科学与技术学院",
+                "real_name":"倪丽",
+                "mobile_phone":"15711505721"
+                }
+        }
+
+修改当前用户身份详细信息    POST
+    /ticket/api/public/participant?m=modifyUserInfo
+    参数:
+        realName       否       姓名，仅允许一次修改，若数据库中有该值，则不允许修改
+        college         否       学院，仅允许一次修改，若数据库中有值，则不允许修改
+        grade           否       年级，2012，2013，2014等
+        identity        否       本科，研究生，博士，教工四种值，后端未校验
+        sex             否       男，女两种值，未校验
+        telephone    否       手机号
+
+获取当前已开始&即将开始活动列表    GET
+    /ticket/api/user/participant?m=getTicketList
+    参数：无
+    返回值：
+        {
+            "errno": 0,
+            "errmsg": "ok",
+            "data": [
+                {
+                    "actID": "141",
+                    "name": "啊沙发大水电费",
+                    "startTime": "2015-01-01 00:01:00",
+                    "endTime": "2017-01-02 00:01:00",
+                    "total": "2",
+                    "times": "3",
+                    "leftTickets": 2,
+                    "result": "未参与",
+                    "accessToken": null,
+                    "userUsedTimes": 0
+                },
+                {
+                    "actID": "140",
+                    "name": "撒的发生",
+                    "startTime": "2015-01-01 01:01:00",
+                    "endTime": "2017-01-01 00:01:00",
+                    "total": "234",
+                    "times": "1",
+                    "leftTickets": 0,
+                    "result": "未参与",
+                    "accessToken": null,
+                    "userUsedTimes": 0
+                }
+            ]
+        }
+
+获取某抢票活动详情   GET
+    /ticket/api/user/participant?m=getTicketContent
+    参数：
+        actID       是       活动id
+    返回值：
+        {
+            "errno": 0,
+            "errmsg": "ok",
+            "data": {
+                "actID": "141",
+                "owner": "23434",
+                "isPassed": "1",
+                "name": "啊沙发大水电费",
+                "content": "<p>歌啊发大水</p>",
+                "total": "2",
+                "times": "3",
+                "demand": "click",
+                "demandDetail": null,
+                "startTime": "2015-01-01 00:01:00",
+                "endTime": "2017-01-02 00:01:00",
+                "type": "random",
+                "chance": "0",
+                "left": 2,
+                "result": "未参与"
+            }
+        }
+
+进行抢票        POST
+    /ticket/api/user/participant?m=ticket
+    参数：
+        actID       是       活动id
+    返回值：
+        该接口未实现，目前临时返回全部成功
+        {
+            "errno": 0,
+            "errmsg": "ok",
+            "data": "123456789012"
+        }
+
+退票          POST
+    /ticket/api/user/participant?m=returnTicket
+    参数：
+        log_id      是       非用户id非活动id，个人纪录中的id对应值，无实际意义，主键，用以区分不同log
+    返回值：
+
+获取某人个人历史纪录：
+    /ticket/api/user/participant?m=getHistoryRecord
+    参数：无
+    返回值：
+        {
+            "errno": 0,
+            "errmsg": "ok",
+            "data": [
+                {
+                    "id": "20",
+                    "actID": "14",
+                    "userID": "1135",
+                    "time": "2014-05-18 10:59:24",
+                    "result": "0",
+                    "accessToken": null,
+                    "isUsed": "0",
+                    "name": "鲁大卫讲座——富有远见的领导力",
+                    "times": "3",
+                    "leftTimes": 0
+                },
+                {
+                    "id": "6467",
+                    "actID": "55",
+                    "userID": "1135",
+                    "time": "2014-09-24 01:26:49",
+                    "result": "0",
+                    "accessToken": null,
+                    "isUsed": "0",
+                    "name": "易抢票练手Marathon（第10季） ",
+                    "times": "2",
+                    "leftTimes": 0
+                },
+                {
+                    "id": "6462",
+                    "actID": "56",
+                    "userID": "1135",
+                    "time": "2014-09-24 01:24:07",
+                    "result": "1",
+                    "accessToken": "829699063783",
+                    "isUsed": "0",
+                    "name": "【易抢票】免费抢小绿（第4季）",
+                    "times": "2",
+                    "leftTimes": 0
+                },
+                {
+                    "id": "42730",
+                    "actID": "141",
+                    "userID": "1135",
+                    "time": "2016-03-24 13:04:18",
+                    "result": "1",
+                    "accessToken": "146752950820",
+                    "isUsed": "0",
+                    "name": "啊沙发大水电费",
+                    "times": "3",
+                    "leftTimes": 0
+                }
+            ]
+        }
+
+
+
+管理员部分：
+获取待审核列表：
+    /ticket/api/admin/admin?m=needReview
+    参数：无
+    返回值：
+        {
+            "errno": 0,
+            "errmsg": "OK",
+            "data": [
+                {
+                    "actID": "134",
+                    "owner": "123456",
+                    "isPassed": "0",
+                    "name": "测测测,updateasdfa",
+                    "content": "<p>发大发,更新更新更新！</p>",
+                    "total": "234",
+                    "times": "130",
+                    "demand": "click",
+                    "demandDetail": null,
+                    "startTime": "2015-01-03 00:01:00",
+                    "endTime": "2016-01-02 00:01:00",
+                    "type": "random",
+                    "chance": "63",
+                    "resultCount": 0,
+                    "count": 111
+                },
+                {
+                    "actID": "135",
+                    "owner": "123456",
+                    "isPassed": "0",
+                    "name": "测测测，update",
+                    "content": "<p>发大发</p>",
+                    "total": "234",
+                    "times": "1",
+                    "demand": "click",
+                    "demandDetail": null,
+                    "startTime": "2015-01-03 00:01:00",
+                    "endTime": "2016-01-02 00:01:00",
+                    "type": "random",
+                    "chance": "0",
+                    "resultCount": 0,
+                    "count": 0
+                }
+            ]
+        }
+
+
+获取即将开始列表：
+    /ticket/api/admin/admin?m=ready
+    参数：无
+    返回值：
+        {
+            "errno": 0,
+            "errmsg": "OK",
+            "data": [
+                {
+                    "actID": "150",
+                    "owner": "15711505721",
+                    "isPassed": "1",
+                    "name": "抢票测试",
+                    "content": "<p>城市成都市成都市成都市</p>",
+                    "total": "1000",
+                    "times": "100",
+                    "demand": "click",
+                    "demandDetail": null,
+                    "startTime": "2016-04-01 11:11:00",
+                    "endTime": "2016-03-18 11:11:00",
+                    "type": "random",
+                    "chance": "100"
+                }
+            ]
+        }
+
+获取正在进行列表：
+    /ticket/api/admin/admin?m=onGoing
+    参数：无
+    返回值：
+        {
+            "errno": 0,
+            "errmsg": "OK",
+            "data": [
+                {
+                    "actID": "140",
+                    "owner": "234234",
+                    "isPassed": "1",
+                    "name": "撒的发生",
+                    "content": "<p>阿斯蒂芬</p>",
+                    "total": "234",
+                    "times": "1",
+                    "demand": "click",
+                    "demandDetail": null,
+                    "startTime": "2015-01-01 01:01:00",
+                    "endTime": "2017-01-01 00:01:00",
+                    "type": "random",
+                    "chance": "0",
+                    "resultCount": 0,
+                    "count": 0
+                },
+                {
+                    "actID": "141",
+                    "owner": "23434",
+                    "isPassed": "1",
+                    "name": "啊沙发大水电费",
+                    "content": "<p>歌啊发大水</p>",
+                    "total": "2",
+                    "times": "3",
+                    "demand": "click",
+                    "demandDetail": null,
+                    "startTime": "2015-01-01 00:01:00",
+                    "endTime": "2017-01-02 00:01:00",
+                    "type": "random",
+                    "chance": "0",
+                    "resultCount": 0,
+                    "count": 0
+                }
+            ]
+        }
+
+获取已结束列表：
+    /ticket/api/admin/admin?m=end
+    参数：无
+    返回值：limit 5
+        {
+            "errno": 0,
+            "errmsg": "OK",
+            "data": [
+                {
+                    "actID": "150",
+                    "owner": "15711505721",
+                    "isPassed": "1",
+                    "name": "抢票测试",
+                    "content": "<p>城市成都市成都市成都市</p>",
+                    "total": "1000",
+                    "times": "100",
+                    "demand": "click",
+                    "demandDetail": null,
+                    "startTime": "2016-04-01 11:11:00",
+                    "endTime": "2016-03-18 11:11:00",
+                    "type": "random",
+                    "chance": "100",
+                    "resultCount": 1,
+                    "count": 15952
+                },
+                {
+                    "actID": "133",
+                    "owner": "123456",
+                    "isPassed": "1",
+                    "name": "测试",
+                    "content": "<p>阿斯蒂芬是</p>",
+                    "total": "23",
+                    "times": "1",
+                    "demand": "click",
+                    "demandDetail": null,
+                    "startTime": "2015-01-01 01:00:00",
+                    "endTime": "2016-02-01 01:01:00",
+                    "type": "random",
+                    "chance": "100",
+                    "resultCount": 1,
+                    "count": 1
+                }
+            ]
+        }
+
+获取未通过列表：
+    /ticket/api/admin/admin?m=notPassed
+    参数：无
+    返回值：limit 5
+        {
+            "errno": 0,
+            "errmsg": "OK",
+            "data": [
+                {
+                    "actID": "121",
+                    "owner": "123",
+                    "isPassed": "-1",
+                    "name": "214",
+                    "content": "<p>2<br></p>",
+                    "total": "1",
+                    "times": "1",
+                    "demand": "click",
+                    "demandDetail": null,
+                    "startTime": "2015-07-07 00:00:00",
+                    "endTime": "2015-07-08 00:00:00",
+                    "type": "random",
+                    "chance": "100",
+                    "resultCount": 0,
+                    "count": 0
+                },
+                {
+                    "actID": "112",
+                    "owner": "11111111111",
+                    "isPassed": "-1",
+                    "name": "阿萨德飞艾丝凡爱上",
+                    "content": "<p>阿萨德发生大幅AAS的发生的发生大发</p>",
+                    "total": "4",
+                    "times": "1",
+                    "demand": "click",
+                    "demandDetail": null,
+                    "startTime": "2015-03-27 22:01:00",
+                    "endTime": "2015-04-10 09:20:00",
+                    "type": "",
+                    "chance": "33",
+                    "resultCount": 0,
+                    "count": 0
+                }
+            ]
+        }
+
+审核抢票活动： POST
+    /ticket/api/admin/admin?m=review
+    参数：
+        actID       是       活动ID
+        isPassed    是       0为重审，1为通过，-1为拒绝
+    返回值:
+        {"errno":0,"errmsg":"OK"}
+
+
+Host部分：TODO:限制Host部分exchange及assignSeat只能该活动发起人操作
+兑换：POST
+    /ticket/api/public/host?m=exchange
+    参数：
+        actID       是       活动id
+        token       是       凭证号
+    返回值：
+        {
+            "errno":0,
+            "errmsg":"ok",
+            "data":{
+                "xmuId":"12120122203036",
+                "realname":"詹子洋",
+                "logId":"61053"
+            }
+        }
+
+指定座位：POST
+    /ticket/api/public/host?m=assignSeat
+    参数：
+        logId       是       纪录id，在兑换请求中的返回值中
+        seat        是       座位描述，01-02，表示第一排第2个座位，后端不进行校验，长度限制10个字符

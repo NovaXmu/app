@@ -1,0 +1,587 @@
+很多改动，订单类型包括领取订单、借用订单、补购订单。
+其中补购订单在所有补购物品都已补齐后，根据补购物品类型自动转为对应的领取订单或借用订单。
+
+物品数量变动：
+    领取订单&借用订单 ————下订单时减
+    管理员修改订单时 ————减去（实际数量-申请数量）
+    管理员处理补购订单 ————物品数量加上管理员补购的数量，再减去申请者申请数量 =====待完成
+=====================================以下是接口===================================================
+
+
+管理员获取贵重物品列表
+    /cargo/api/admin/item?m=getValuablesList
+    参数：无
+
+
+管理员修改或新增贵重物品
+    /cargo/api/admin/item?m=modifyValuables
+    参数：
+        id          否       物品id，若新增操作则无该值
+        name        否       物品名称，string
+        price       否       物品单价，float
+        amount      否       数量，int
+        scale       否       规格，string
+        remark      否       备注，string
+        deleted     否       若删除，则有该值，且值非0
+
+====================================贵重物品相关结束===============================================
+
+管理员获取当前需归还订单及其详情信息  POST
+    /cargo/api/admin/order?m=getToBeReturnOrderList
+    参数：
+        order_num   是   订单号
+    返回值：
+        {
+            "errno": 0,
+            "errmsg": "ok",
+            "data": [
+                {
+                    "id": "3",
+                    "order_num": "298363148574",
+                    "create_time": "2016-03-04 23:48:05",           订单生成时间
+                    "deal_time": null,                              管理员处理订单时间
+                    "user_id": "1",                                 订单申请者id
+                    "admin_id": null,                               处理该订单的管理员id
+                    "order_type": "borrow",                         订单类型
+                    "dealt": "1",                                   订单处理结果，1通过
+                    "remark": "电吹风，测试借用类型订单",                订单备注
+                    "u_name": "倪大人2",                               订单申请者名称
+                    "detail": [
+                        {
+                            "i_name": "修改过名字的电吹风",              订单中物品名称
+                            "borrow_amount": "0",                     该物品实际借用数量，对应之前的real_amount
+                            "borrow_back_time": "2016-04-30",          管理员处理订单后理论上该物品的归还时间，此时间用于过期提醒
+                            "back_admin_name": "倪大人2",              处理该物品归还的管理员姓名，若物品未归还，该值为空
+                            "item_id": "31",                            该物品id
+                            "back_back_amount": "12",                   该物品实际归还数量
+                            "back_back_time": "2016-03-11 21:27:49"     该物品实际归还时间
+                        },
+                        {
+                            "i_name": "山行铁票夹",
+                            "borrow_amount": "0",
+                            "borrow_back_time": null,
+                            "back_admin_name": null,
+                            "item_id": "11",
+                            "back_back_amount": null,
+                            "back_back_time": null
+                        }
+                    ]
+                }
+            ]
+        }
+
+归还物品操作
+    /cargo/api/admin/order?m=returnItem
+    参数：
+    item_id         是
+    order_num       是
+    back_amount     是       归还数量
+
+=========================归还相关结束================================================
+
+
+
+
+
+
+管理员补购订单中新物品处理的第二步，第一步为新增新物品，第二步为第一步中返回值作为item_id更新补购订单表
+    /cargo/api/admin/order?m=modifyBuyLog
+    参数：
+        log_id          是           该条log对应id，不同于订单号，也不同于物品id，是getOrderDetail接口中的主键id，本无实际意义
+        item_id         是           新物品的id，调用addItem接口后的返回值
+
+=================================新增接口，2016-03-09更新====================================
+
+
+
+
+普通用户下take订单：done
+	/cargo/api/user/order?m=take
+	参数：
+		itemIds 		是			json字符串，解析之后是item_id的数组，本次下单的所有物品id,
+		applyAmounts	是			json字符串，解析之后是各物品对应的数量，数组长度必须与itemIds解析之后的数组长度相同
+		remark			是			本次订单备注
+	返回值示例：
+		{"errno":0,"errmsg":"ok"}
+
+普通用户下borrow订单           done
+	/cargo/api/user/order?m=borrow
+	参数：
+		itemIds 		是			json字符串，解析之后是item_id的数组，本次下单的所有物品id,
+		applyAmounts	是			json字符串，解析之后是各物品对应的数量，数组长度必须与itemIds解析之后的数组长度相同
+	    borrowDays       是         json字符串，解析之后是各物品对应的借用天数，正整数
+		remark			是			本次订单备注
+	返回值示例：
+		{"errno":0,"errmsg":"ok"}
+
+普通用户补购buy订单         done
+    /cargo/api/user/order?m=buy
+    参数
+        itemIds         是           json字符串，解析后item_id数组，若新物品，则对应id为小于1的数字
+        itemNames       是           类上
+        applyAmounts	是			json字符串，解析之后是各物品对应的数量，数组长度必须与itemIds解析之后的数组长度相同
+        remark          是           本次订单备注
+    返回值示例：
+    		{"errno":0,"errmsg":"ok"}
+
+
+管理员获取订单列表         GET方式   done
+	/caogo/api/admin/order?m=getList
+	参数：
+        type            否           可为buy、take、borrow，若无则获取所有类型订单
+
+{
+    "errno": 0,
+    "errmsg": "ok",
+    "data": [
+        {
+            "id": "1",
+            "order_num": "277310097616",
+            "create_time": "2016-03-04 22:37:24",
+            "deal_time": null,
+            "user_id": "1",
+            "admin_id": null,
+            "order_type": "take",
+            "dealt": "0",
+            "remark": "测试take订单成功",
+            "name": "倪大人2"
+        }
+    ]
+}
+
+{
+    "errno": 0,
+    "errmsg": "ok",
+    "data": [
+        {
+            "id": "8",
+            "order_num": "669862079574",
+            "create_time": "2016-03-07 17:06:31",
+            "deal_time": null,
+            "user_id": "2",
+            "admin_id": null,
+            "order_type": "borrow",
+            "dealt": "0",
+            "remark": "nothing",
+            "name": "ziyang"
+        }
+    ]
+}
+
+{
+    "errno": 0,
+    "errmsg": "ok",
+    "data": [
+        {
+            "id": "4",
+            "order_num": "428573517106",
+            "create_time": "2016-03-04 23:55:58",
+            "deal_time": null,
+            "user_id": "1",
+            "admin_id": null,
+            "order_type": "buy",
+            "dealt": "0",
+            "remark": "补购订单啦啦啦",
+            "name": "倪大人2"
+        }
+    ]
+}
+
+
+管理员获取订单内物品列表       GET方式       done
+    /cargo/api/admin/order?m=getOrderDetail
+    参数
+        orderNum        是           订单号，12位数字
+
+{
+    "errno": 0,
+    "errmsg": "ok",
+    "data": [
+        {
+            "id": "3",
+            "order_num": "410294771521",
+            "item_id": "1",
+            "apply_amount": "3",
+            "real_amount": "0",
+            "item_name": "我们",
+            "item_picUrl": "/static/cargo/item/ab4a85fc2ec4cf830e0f84aaacefcb1c.jpeg",
+            "item_amount": "0",
+            "item_room": "1",
+            "item_location": "1",
+            "item_type": "0"
+        }
+    ]
+}
+
+{
+    "errno": 0,
+    "errmsg": "ok",
+    "data": [
+        {
+            "id": "10",
+            "item_id": "31",
+            "apply_amount": "3",
+            "order_num": "669862079574",
+            "real_amount": "0",
+            "back_time": "2016-03-10",
+            "item_name": "修改过名字的电吹风",
+            "item_picUrl": "/static/cargo/item/b02d62b61386e52114291cfd52e08c90.jpeg",
+            "item_amount": "6",
+            "item_room": "B912",
+            "item_location": "入口箱子",
+            "item_type": "1"
+        }
+    ]
+}
+
+{
+    "errno": 0,
+    "errmsg": "ok",
+    "data": [
+        {
+            "id": "104",
+            "item_id": "31",
+            "item_name": "修改过名字的电吹风",
+            "order_num": "428573517106",
+            "apply_amount": "1",
+            "admin_id": null,
+            "real_amount": null,
+            "dealt_time": null,
+            "item_picUrl": "/static/cargo/item/b02d62b61386e52114291cfd52e08c90.jpeg",
+            "item_amount": "6",
+            "item_room": "B912",
+            "item_location": "入口箱子",
+            "item_type": "1"
+        },
+        {
+            "id": "105",
+            "item_id": "0",
+            "item_name": null,
+            "order_num": "428573517106",
+            "apply_amount": "10",
+            "admin_id": null,
+            "real_amount": null,
+            "dealt_time": null,
+            "item_picUrl": null,
+            "item_amount": null,
+            "item_room": null,
+            "item_location": null,
+            "item_type": null
+        }
+    ]
+}
+
+
+管理员修改订单数据：  done
+    /cargo/api/admin/order?m=modify     
+    参数
+        orderNum        是           订单号
+        itemId          是           本次修改对应的物品id
+        realAmount      否           若修改数量则有该值
+        back_time       否           yyyy-mm-dd，仅对借用物品有效
+            注：realAmount与borrowDays不能同时为空
+
+管理员处理订单（即标注订单通过/不通过）    done
+    /cargo/api/admin/order?m=deal
+    参数
+        orderNum        是
+        deal            是           1通过，-1不通过
+
+管理员修改物品：
+	/cargo/api/admin/item?m=modify
+	参数：
+	    item_id             是          被修改物品的id
+		name				否 		    物品名称
+		room				否			仓库
+		location			否			位置
+		category_id			否			类别id,该类别类型也会决定新增的物品的类型
+		    注：以上四个否字段不能同时为空
+	返回值示例：
+		{"errno":0,"errmsg":"ok"}
+
+管理员补购物品（增加已存在物品的数量） done
+    /cargo/api/admin/item?m=addAmount
+    参数：
+        item_id         是               补购物品对应的id
+        amount          是               本次新补购的数量
+
+=======================================大幅度改动接口到此为止===========================================================
+
+管理员新增物品：
+	/cargo/api/admin/item?m=add
+	参数：
+		name				是 			物品名称
+		amount				是			物品数量
+		room				是			仓库
+		location			是			位置
+		category_id			是			类别id,该类别类型也会决定新增的物品的类型
+		author				否			若为图书，新增时有作者字段
+		borrow_days         否           借用类型物品则必须有该值，正整数
+        type                是           物品类型，take为0
+	返回值示例：
+		{"errno":0,"errmsg":"ok","data":6}
+
+管理员物品图片上传
+	/cargo/api/admin/item
+	参数：
+		m 			是		值为pic
+		item_id		是		上传物品的id
+		type        否       可为item或valuables，分别对应普通物品与贵重物品的图片上传，默认variables，之前的item接口可以保持不变
+		file     是  图片
+	返回值
+	{"errno":0,"errmsg":"ok"}等
+
+管理员物品图片上传（微信端）
+	/cargo/api/admin/item?m=picFromWechat
+	参数：
+		item_id 		是 		物品id
+		media_id 	是 		媒体文件ID
+	    type        否       可为item或valuables，分别对应普通物品与贵重物品的图片上传，默认variables，之前的item接口可以保持不变
+
+	返回值
+		{"errno":0,"errmsg":"ok"}等
+
+
+
+
+新增category信息
+	/cargo/api/admin/category
+	参数
+		name		是
+		type		是			0表示apply类型的类别，1为borrow
+	返回值示例：
+		{"errno":0,"errmsg":"ok","data":5}
+
+修改category信息
+	/cargo/api/admin/category?m=modify
+	参数
+	    id          是           category的id
+		name		否			category新名称
+		deleted 	否			删除category
+			以上三个参数至少有一个
+	返回值示例：
+		{"errno":0,"errmsg":"ok"}
+
+=========================================普通管理员功能到此结束===========================================
+
+获取管理员权限：    GET方式       done
+	/cargo/api/admin/superAdmin?m=getAdminPrivilege
+	参数：
+		user_id		是		管理员id
+	返回值：
+	{
+	    "errno": 0,
+	    "errmsg": "ok",
+	    "data": [
+	        {
+	            "id": "1",
+	            "user_id": "1",
+	            "category_id": "14",
+	            "time": "2015-11-28 21:45:25",
+	            "deleted": "0",
+	            "category_name": "办公用品"
+	        },
+	        {
+	            "id": "2",
+	            "user_id": "1",
+	            "category_id": "21",
+	            "time": "2015-11-28 23:32:00",
+	            "deleted": "0",
+	            "category_name": "3"
+	        }
+	    ]
+	}
+
+管理员权限变更（新增或删除）： done
+	/cargo/api/admin/superAdmin?m=changePrivilege
+	参数：
+		user_id		是		管理员id
+		category_id		是		类别id
+		注：相同参数第一次请求将会新增该权限，第二次请求将会删除该权限，第三次将会恢复，第四次会再删除...以此类推
+
+	返回值示例：
+		{"errno":0,"errmsg":"ok"}、{"errno":1,"errmsg":"类别不存在"}
+
+超级管理员修改：        done
+	/cargo/api/admin/superAdmin?m=updateSuperAdmin
+	参数：
+		username 	是		长度小于10
+		password	是		密码
+	返回值：
+	{"errno":0,"errmsg":"ok"}等 	root root账号登陆进行测试
+
+超级管理员下载（下载 领取&借用 类型物资 被通过的申请信息）：    =========尚未完工
+	/cargo/api/admin/superAdmin?m=download
+	参数：
+	start		否			若有，则get方式，早于该日期的信息将不会出现
+	end			否			若有，则get方式，晚于该日期的信息将不会出现
+	borrow 		否			get方式，任意值，若有该参数则下载借用订单数据，若无则下载领取类型数据       =====此处有变，之前是type，现在是borrow，作用一样，标记下载的数据是哪种类型
+	返回值：
+	下载的xls文件
+
+超级管理员新增/修改单个用户:             done
+	/cargo/api/admin/superAdmin?m=changeUser
+	参数：
+	name 		否		用户姓名
+	mobile_phone	否		手机号
+	email			否
+	deleted 		否		若有该参数，无论什么值都认为要删除该用户
+	user_id			否		若无该值，则新增用户，必须有name、mobile_phone、email
+
+	返回值：
+	{"errno":0,"errmsg":"ok"}
+
+用户列表：           done
+	/cargo/api/admin/superAdmin?m=getUserList
+	返回值
+	{"errno":1,"errmsg":"非法请求"}=>该接口必须超级管理员登陆才可用
+
+	{
+	    "errno": 0,
+	    "errmsg": "ok",
+	    "data": [
+	        {
+	            "id": "1",
+	            "name": "nili",
+	            "mobile_phone": "123456",
+	            "email": "123456",
+	            "openid": "xxxxx",
+	            "deleted": "0",
+	            "isAdmin": 1
+	        },
+	        {
+	            "id": "2",
+	            "name": "ziyang",
+	            "mobile_phone": "123456789",
+	            "email": "123456789",
+	            "openid": "nidaren",
+	            "deleted": "0",
+	            "isAdmin": 0
+	        }
+	    ]
+	}
+
+======================================================超级管理员功能到此结束====================================
+
+
+普通用户获取物品列表： done
+    /cargo/api/user/item
+    参数：无
+    返回值示例：
+    {
+        "errno": 0,
+        "errmsg": "ok",
+        "data": {
+            "1": [
+                {
+                    "id": "5",
+                    "name": "借用类型的物品",
+                    "picUrl": null,
+                    "amount": "5",
+                    "room": "room2",
+                    "location": "location2",
+                    "category_id": "1",
+                    "type": "0",
+                    "update_time": "2015-11-23 23:24:28",
+                    "update_admin_id": "1"
+                }
+            ],
+            "2": [
+                {
+                    "id": "1",
+                    "name": "item1",
+                    "picUrl": null,
+                    "amount": "11",
+                    "room": "room1",
+                    "location": "1111",
+                    "category_id": "2",
+                    "type": "0",
+                    "update_time": "2015-11-23 21:29:46",
+                    "update_admin_id": "1"
+                },
+                {
+                    "id": "2",
+                    "name": "一本书/作者：xxx",
+                    "picUrl": null,
+                    "amount": "11",
+                    "room": "room1",
+                    "location": "1111",
+                    "category_id": "2",
+                    "type": "0",
+                    "update_time": "2015-11-23 21:30:36",
+                    "update_admin_id": "1"
+                }
+            ]
+        }
+    }
+
+
+
+普通用户获取分类category列表：
+	/cargo/api/user/category
+	参数：
+		m 			否			apply或borrow，默认apply，获取特定的类型物品的category
+		id 			否			category id，可无，有则获取某一category信息，无则获取所有category信息
+	返回值示例：
+		{
+		    "errno": 0,
+		    "errmsg": "ok",
+		    "data": [
+		        {
+		            "id": "1",
+		            "name": "类别1",
+		            "time": "2015-11-23 21:11:53",
+		            "type": "0",
+		            "admin_id": "1"
+		        },
+		        {
+		            "id": "2",
+		            "name": "类别1",
+		            "time": "2015-11-23 21:13:17",
+		            "type": "0",
+		            "admin_id": "1"
+		        },
+		        {
+		            "id": "3",
+		            "name": "借用类型的物品",
+		            "time": "2015-11-23 23:25:05",
+		            "type": "0",
+		            "admin_id": "1"
+		        }
+		    ]
+		}
+
+==========================================普通用户功能到此结束========================================
+
+
+查询当前用户身份：               done
+	/cargo/api/public/user
+	返回值：
+	{"errno":0,"errmsg":"管理员"}、{"errno":0,"errmsg":"普通用户"}、{"errno":0,"errmsg":"超级管理员"}
+
+超级管理员登陆：            done
+    /cargo/api/public/superAdmin
+    参数：
+        username 	是
+        password 	是
+    返回值：
+    {"errno":0,"errmsg":"ok"}等 	root root账号登陆进行测试
+
+普通用户绑定身份:   ============这个接口完全没变
+    /cargo/api/public/linkin
+    参数：
+        openid	是	微信的openid
+        mobile_phone	是 		用户手机号
+    返回值：
+    {
+        "errno": 0,
+        "errmsg": "ok",
+        "data": {
+            "id": "2",
+            "name": "ziyang",
+            "mobile_phone": "123456789",
+            "email": "123456789",
+            "openid": "xxxxxxx"
+        }
+    }
+==========================身份未知用户的功能到此结束=================================================

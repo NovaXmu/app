@@ -1,0 +1,19 @@
+本应用使用到的缓存有：
+    key                                         value                       description
+mall_xmuMailBobingTimes_{$yb_uid}               int                         目前值为5，表示每日一次厦大邮箱活跃可领取的额外薄冰次数
+mall_starBobingTimes_{$yb_uid}                  int                         在易班个人活跃排行榜上的用户每日可领取的额外博饼次数，目前设置为5
+mall_medalBobingTimes_{$yb_uid}_{$groupid}      int                         某用户所在的某班级egpa上了易班排行榜，可领取的额外博饼次数，目前设置为5，不同班级可累加
+mall_totalGroupBobingTimes_{$yb_uid}            int                         某用户某日在其所在的所有班级egpa排行榜上获得的额外次数总和
+
+mall_awardTimes                                 int                     未设置时默认为1，表示当前网薪商城所有游戏的奖励倍数，该值由管理员在后台设置
+mall_bobingDailyTimes                           int                     当前设置的用户每日博饼次数，默认值为5，该值由管理员在后台设置
+mall_availableKinds                             int                     当前用户可在上架商品中购买的商品种类，该值由管理员在后台设置，默认为3
+mall_itemEffectiveDay                           int                     当前token有效期，可由管理员在后台设置，默认值7
+
+mall_{$item_id}_info                            array                   某商品的信息
+mall_hotItemID                                  array                   当前最热门的物品id
+
+mall_starRankData                               array                   当日活跃用户榜数据
+mall_medalRankData                              array                   当日egpa榜数据
+
+yb_user_info_{$yb_uid}                          array                   活跃用户易班信息，含昵称姓名学号等
